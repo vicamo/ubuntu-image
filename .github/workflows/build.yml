@@ -1,0 +1,26 @@
+name: Build Image
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      LXC_CONTAINER_NAME: ubuntu
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup LXD
+        uses: canonical/setup-lxd@v0.1.1
+        with:
+          channel: latest/stable
+      - name: Launch container
+        run: |
+          lxc launch ubuntu:22.04 ${LXC_CONTAINER_NAME}
+          lxc config device add ${LXC_CONTAINER_NAME} builddir disk source=$(pwd) path=/build
+          lxc config device show ${LXC_CONTAINER_NAME}
+          lxc exec ${LXC_CONTAINER_NAME} ls /build
